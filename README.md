@@ -151,6 +151,11 @@ Ogni elemento grafico ha un tooltip con valore, quota e descrizione; le voci non
 - Card, KPI e pulsanti con spessore laterale in grigio metallizzato; righe di tabella in rilievo inverso.
 - Layout responsivo (pannello input laterale fisso su desktop, impilato sotto i 1100 px); stili di stampa dedicati.
 
+## DEMO
+
+Usa i dati di esempio o inserisci nuovi dati con i tuoi obiettivi per valutare la convenienza delle differenti alternative  [DEMO](https://simulator-cloud.netlify.app/)
+
+
 ## Test
 
 Harness minimale in `test/` basato su [jsdom](https://github.com/jsdom/jsdom):
