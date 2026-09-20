@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guida all'uso e glossario — Simulatore AI Locale vs Cloud + API</title>
+<style>
+:root{--bg:#f6f7f9;--surface:#fff;--surface2:#f1f3f6;--line:#e3e6eb;--line2:#cfd4dc;--tx:#111827;--tx2:#5b6472;--tx3:#8a93a2;--loc:#1f2937;--cld:#2563eb;--ok:#15803d;--warn:#a16207;--bad:#b91c1c;--font:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:14.5px/1.6 var(--font);-webkit-font-smoothing:antialiased}
+header{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:12px 24px;display:flex;gap:14px;align-items:baseline;z-index:5}
+header h1{font-size:15px;margin:0;font-weight:600}
+header span{color:var(--tx3);font-size:12px}
+header a{color:var(--cld);text-decoration:none;font-size:13px;margin-left:auto}
+.wrap{display:grid;grid-template-columns:240px minmax(0,1fr);max-width:1400px;margin:0 auto;gap:24px;padding:24px}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}nav{position:static!important}}
+nav{position:sticky;top:64px;align-self:start;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px}
+nav a{display:block;color:var(--tx2);text-decoration:none;font-size:13px;padding:5px 8px;border-radius:6px}
+nav a:hover{background:var(--surface2);color:var(--tx)}
+main section{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:24px;margin-bottom:24px}
+h2{font-size:16px;margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid var(--line);font-weight:600}
+h3{font-size:13px;margin:20px 0 8px;color:var(--tx2);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;overflow-wrap:anywhere}
+th{color:var(--tx3);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+code,.f{font-family:var(--mono);font-size:12.5px;background:var(--surface2);padding:1px 5px;border-radius:4px;color:var(--tx)}
+.f{display:block;padding:10px 12px;white-space:pre-wrap;margin:8px 0;border:1px solid var(--line);line-height:1.6}
+.loc{color:var(--loc);font-weight:600}.cld{color:var(--cld);font-weight:600}
+.badge{display:inline-block;font-size:10.5px;padding:1px 7px;border-radius:999px;font-weight:500;border:1px solid transparent}
+.b-dato{background:#eef7f0;color:var(--ok);border-color:#cfe6d5}.b-ipo{background:#fbf5e8;color:var(--warn);border-color:#ecdcb8}
+.tip{border-left:2px solid var(--tx);background:var(--surface2);padding:8px 12px;border-radius:0 6px 6px 0;margin:12px 0;font-size:13px;color:var(--tx2)}
+dl{display:grid;grid-template-columns:200px 1fr;gap:6px 16px}dt{font-weight:600;color:var(--tx)}dd{margin:0;color:var(--tx2)}
+@media(max-width:700px){dl{grid-template-columns:1fr}}
+ol li,ul li{margin:4px 0}
+</style>
+</head>
+<body>
+<header><h1>Guida all'uso e glossario</h1><span style="color:var(--tx2);font-size:12px">Simulatore convenienza economica AI — Locale (open-weight) vs Cloud + API · v2</span><a href="index.html">Torna al simulatore</a></header>
+<div class="wrap">
+<nav>
+ <a href="#flusso">1. Come si usa</a>
+ <a href="#fasi">2. Fase 1 e Fase 2</a>
+ <a href="#task">3. Il catalogo Task</a>
+ <a href="#variabili">4. Variabili di input (tab A–J)</a>
+ <a href="#formule">5. Formule principali</a>
+ <a href="#card">6. Le card di risultato</a>
+ <a href="#glossario">7. Glossario</a>
+ <a href="#json">8. Formati JSON</a>
+ <a href="#limiti">9. Limiti e buone pratiche</a>
+</nav>
+<main>
+
+<section id="flusso"><h2>1. Come si usa in 5 passi</h2>
+<ol>
+<li><b>Scegli il livello di dettaglio.</b> Se hai solo un'idea di massima (utenti, volumi, modello desiderato, budget, tempi) usa <b>Pre-valutazione rapida</b> (15 variabili). Se hai già misure e quotazioni, compila i tab A–J nel pannello di sinistra.</li>
+<li><b>Descrivi il lavoro come Task</b> (tab B): ogni riga è un tipo di attività con volume giornaliero, token, latenza massima, tool call, TB letti dal DWH. È la base di tutto il calcolo (vedi §3).</li>
+<li><b>Premi Calcola</b> (o aspetta: il ricalcolo è automatico dopo ogni modifica). L'indicatore nell'header mostra il TCO delle due alternative e la variazione rispetto al calcolo precedente.</li>
+<li><b>Leggi le card nell'ordine</b>: perimetro → vincoli eliminatori → tempo per task → dimensionamento → costi → TCO → scenari → congruenza dell'utilizzo → sensitività → fit → input → raccomandazione.</li>
+<li><b>Documenta le fonti.</b> In testa a ogni tab puoi indicare fonte/quotazione, data e confidenza: compaiono nella tabella input finale (card 13b) e nel grafico di confidenza. Esporta il JSON per archiviare la valutazione.</li>
+</ol>
+<div class="tip">I valori predefiniti sono <span class="badge b-ipo">ipotesi</span> dimostrative, non prezzi di listino. Ogni campo che modifichi diventa <span class="badge b-dato">dato</span>. Puoi scrivere i numeri all'italiana (<code>0,35</code>, <code>45.000</code>).</div>
+</section>
+
+<section id="fasi"><h2>2. Fase 1 (pre-valutazione) e Fase 2 (analisi completa)</h2>
+<p><b>Fase 1</b> chiede 15 variabili decisionali (caso d'uso, utenti, task/giorno, picco/media, crescita, parametri del modello, gap di qualità, sensibilità dati, TB di dati, n. integrazioni, budget, orizzonte, scadenza, capacità IT interna, beneficio annuo). Con euristiche documentate le traduce nei ~150 input della Fase 2 e usa <b>lo stesso motore</b>: perciò i risultati sono coerenti e tutte le card si popolano. Restituisce un verdetto di orientamento (vincoli → economia → fit), l'infrastruttura stimata e uno scorecard 0–5.</p>
+<p><b>Fase 2</b> è l'analisi disaggregata: puoi correggere ogni singolo input generato dalla Fase 1 (i tab di sinistra sono già compilati) sostituendo le euristiche con misure, benchmark e quotazioni reali.</p>
+<h3>Principali euristiche della Fase 1</h3>
+<table><tr><th style="width:28%">Da</th><th>A</th></tr>
+<tr><td>Parametri del modello (B)</td><td>GPU consigliata (≤12B L40S · ≤40B H100 NVL · ≤80B H200 NVL · oltre H200 SXM), quantizzazione (8 bit da 30B), KV per token ≈ 2,3 KB × B, parametri attivi 15% se ≥ 200B (MoE)</td></tr>
+<tr><td>Caso d'uso</td><td>token input/cache/output per task, n. tool call, latenza massima, quota batch, integrazioni tipiche</td></tr>
+<tr><td>Capacità IT interna</td><td>FTE locale/cloud, mesi di procurement e implementazione, probabilità di outage, punteggi di fit</td></tr>
+<tr><td>Sensibilità dati</td><td>"Critica" esclude il cloud; "Alta" aumenta sicurezza gestita e tariffa compliance</td></tr>
+<tr><td>TB di dati</td><td>storage raw/curated, vettori, un task analitico aggiuntivo con scansione DWH</td></tr>
+<tr><td>Beneficio annuo</td><td>valore netto NPV e costo del ritardo (= 50% del beneficio mensile)</td></tr></table>
+</section>
+
+<section id="task"><h2>3. Il catalogo Task (tab B) — il cuore del calcolo</h2>
+<p>Un <b>task</b> è un tipo di lavoro che il sistema AI svolge (una conversazione, l'analisi di un documento, un report). Ogni riga alimenta direttamente il motore; aggiungere, modificare o eliminare una riga ricalcola tutto.</p>
+<table><tr><th style="width:16%">Colonna</th><th style="width:34%">Significato e unità</th><th>Cosa determina</th></tr>
+<tr><td>Task</td><td>nome descrittivo</td><td>etichetta nelle card</td></tr>
+<tr><td>n/gg</td><td>esecuzioni al giorno medio</td><td>token/anno, costo API, concorrenza nell'ora di punta → n. GPU</td></tr>
+<tr><td>Input tok</td><td>token del prompt <i>non</i> in cache (istruzioni variabili, domanda, documenti)</td><td>tempo di prefill, prezzo input API; oltre la soglia long-context scatta il moltiplicatore</td></tr>
+<tr><td>Cache tok</td><td>token del prompt ripetuti a ogni chiamata (system prompt, catalogo, policy)</td><td>prezzo cached input (≈ −90%); in locale pesano il 10% nel prefill</td></tr>
+<tr><td>Out tok</td><td>token generati (inclusi reasoning token fatturati)</td><td>tempo di decode (la fase più lenta), prezzo output API</td></tr>
+<tr><td>Lat. max s</td><td>tempo massimo accettabile per completare il task, in <b>secondi</b></td><td>se il tempo calcolato lo supera, il task è KO → vincolo eliminatorio per quell'alternativa</td></tr>
+<tr><td>Int.</td><td>spuntato = interattivo (un utente attende)</td><td>pesa sul picco GPU e sul costo del tempo di attesa; non spuntato = batch notturno con sconto Batch API</td></tr>
+<tr><td><b>Tool call</b></td><td><b>numero</b> (adimensionale) di chiamate a sistemi esterni per task: ERP, catalogo, CRM, pagamenti, ricerca, ecc. Es. assistente e-commerce = 4 (ricerca prodotto, disponibilità, carrello, CRM cliente)</td><td>ogni chiamata aggiunge la <b>latenza media in ms</b> delle integrazioni selezionate nel tab F (colonna "Latenza ms/call"); il tempo risultante è uguale nelle due alternative e si somma a prefill + decode</td></tr>
+<tr><td>TB scan</td><td>terabyte letti dal data warehouse per ogni esecuzione</td><td>dimensionamento nodi DWH locali (TB/s richiesti) e costo per TB scansionato in cloud</td></tr>
+<tr><td>QA</td><td>quota (0–1) del task soggetta a revisione umana e a perdita per errore</td><td>costi di qualità: 1 = ogni esecuzione può essere rivista; 0,02 = campionamento</td></tr></table>
+<div class="tip">Misura i token su un flusso agentico <i>completo</i> (tutti i passaggi e le tool call), non su una singola risposta: è la variabile che sposta di più GPU e costo API.</div>
+</section>
+
+<section id="variabili"><h2>4. Variabili di input per tab</h2>
+<h3>A · Contesto</h3>
+<dl><dt>Orizzonte</dt><dd>anni su cui si calcola il TCO (3–5)</dd><dt>Tasso di attualizzazione</dt><dd>costo del capitale usato per NPV e costo annuo equivalente</dd><dt>Ore accensione infrastruttura</dt><dd>ore/anno in cui l'hardware locale consuma energia (8760 = sempre acceso)</dd><dt>Ore di punta / quota ora più carica</dt><dd>concentrazione del traffico: la quota nell'ora più carica × picco stagionale dimensiona le GPU</dd><dt>Picco stagionale (×) e giorni</dt><dd>moltiplicatore rispetto al giorno medio (Black Friday, saldi, chiusure fiscali)</dd><dt>SLA, RTO, RPO</dt><dd>agiscono a soglia: SLA &gt; 99%, RTO &lt; 4 h, RPO &lt; 1 h aumentano backup/DR e sicurezza</dd><dt>Scadenza go-live</dt><dd>vincolo eliminatorio se un'alternativa non ce la fa</dd><dt>Costo del ritardo</dt><dd>€/mese di valore perso per ogni mese senza soluzione</dd><dt>Beneficio annuo</dt><dd>risparmi + margine: serve per il valore netto; è moltiplicato per il pass rate del modello</dd><dt>Crescita annua</dt><dd>del carico, applicata anno per anno</dd><dt>Riserva di rischio</dt><dd>contingency % sui costi di implementazione</dd></dl>
+<h3>B · Task</h3><dl><dt>Tasso di retry</dt><dd>% di chiamate ripetute per errori/timeout</dd><dt>Valore del tempo di attesa</dt><dd>€/ora: monetizza la differenza di tempo per task tra le alternative</dd><dt>Quota di attesa attiva</dt><dd>% del tempo task in cui l'utente aspetta davvero</dd></dl>
+<h3>C · Modello &amp; GPU</h3><dl><dt>Parametri totali / attivi</dt><dd>miliardi; nei modelli MoE gli attivi per token sono una frazione dei totali e determinano velocità</dd><dt>Quantizzazione</dt><dd>bit per peso: 16 = FP16/BF16, 8 = FP8/INT8, 4 = INT4/AWQ; dimezzare i bit raddoppia la velocità di decode</dd><dt>KV cache per token</dt><dd>KB di memoria per ogni token di contesto (70B GQA FP16 ≈ 320 KB)</dd><dt>Contesto massimo</dt><dd>vincolo: task con input+output oltre non eseguibili</dd><dt>GPU (catalogo)</dt><dd>precompila VRAM, banda, TFLOPS, TDP, prezzo (modificabili). Distinguere SXM / PCIe / NVL</dd><dt>MBU</dt><dd>Memory Bandwidth Utilization: quota della banda teorica realmente sfruttata nel decode (50–75%)</dd><dt>MFU</dt><dd>Model FLOPS Utilization: quota dei TFLOPS sfruttata nel prefill (40–60%)</dd><dt>Penalità tensor parallel</dt><dd>overhead % per ogni GPU aggiuntiva che condivide il modello</dd><dt>Batch massimo</dt><dd>richieste servite insieme da un gruppo GPU; limitato anche dalla VRAM libera per la KV</dd><dt>Throughput misurato</dt><dd>se &gt; 0 sostituisce la stima fisica con il tuo benchmark</dd><dt>Gruppi failover / test</dt><dd>repliche del modello per N+1 e per eval/aggiornamenti</dd><dt>TTFT, prefill, TPOT API</dt><dd>velocità del modello cloud: tempo al primo token, token/s di prefill, ms per token di output</dd><dt>Rate limit</dt><dd>token/min del tier API: vincolo al picco</dd></dl>
+<h3>D · Qualità</h3><dl><dt>Pass rate eval</dt><dd>% di esiti corretti sullo <i>stesso</i> eval aziendale; sotto il minimo = escluso</dd><dt>Azioni non conformi</dt><dd>% di esecuzioni con errore rilevante → perdita per errore</dd><dt>Casi in revisione</dt><dd>% dei task QA sottoposti a revisione umana → minuti × costo revisore</dd><dt>Licenza</dt><dd>verifica dell'uso commerciale del modello open-weight</dd></dl>
+<h3>E · Dati &amp; DWH</h3><dl><dt>Dati sorgente / curati, crescita, ingestione</dt><dd>dimensionano storage (× replica + backup) e ETL cloud</dd><dt>Tempo obiettivo scansione</dt><dd>secondi entro cui il DWH deve leggere i TB del task (es. 1 TB in 20 s = 50 GB/s)</dd><dt>Query concorrenti</dt><dd>moltiplica il fabbisogno di banda di scansione</dd><dt>Motore DWH</dt><dd>CPU colonnare (nodi dedicati) · GPU co-locata (sottrae capacità al modello) · GPU dedicata</dd><dt>GB/s per nodo / per GPU</dt><dd>scansione effettiva misurata sui dati reali</dd><dt>Quota contesa</dt><dd>% di tempo GPU sottratto all'inferenza se co-locato</dd><dt>Pruning</dt><dd>% dei dati realmente letta grazie a partizioni/indici</dd><dt>Prezzo cloud per TB / slot-ora</dt><dd>i due modelli di fatturazione dei DWH cloud; il simulatore sceglie il minore</dd><dt>Vettori, dimensioni, overhead</dt><dd>dimensione dell'indice vettoriale (RAG)</dd></dl>
+<h3>F · Integrazioni</h3><p>Spunta i sistemi con cui l'AI deve dialogare. Ogni voce porta: CAPEX e OPEX locale, canone cloud mensile, <b>ore di integrazione</b> (uguali nelle due alternative), <b>ore compliance/anno</b> (in locale ×1,3), <b>latenza ms/call</b> (usata dalle tool call). Pagamenti attiva l'extra PCI-DSS in locale.</p>
+<h3>G · Locale € · H · Cloud € · I · Sviluppo</h3><p>Prezzi e ore con la stessa struttura della skill: energia con PUE, manutenzione % del hardware, FTE, refresh a fine vita utile, valore residuo, outage atteso; listino API con cached/long-context/batch e deflazione annua; ore per fase con markup fornitore separato e guadagno coding agent applicato solo alle attività automatizzabili (frontend, backend, data engineering, documentazione), in modo simmetrico.</p>
+<h3>J · Vincoli &amp; Fit</h3><p>Vincoli eliminatori con conseguenza operativa (divieto di trasferimento, offline, regione, retention, capacità operativa, spazio) e punteggi 1–5 di fit su 6 assi, tenuti separati dal TCO.</p>
+</section>
+
+<section id="formule"><h2>5. Formule principali</h2>
+<h3>Tempo per task</h3>
+<span class="f">decode_tok/s  = banda_GPU × MBU × TP × (1 − penalità·(TP−1)) ÷ byte_pesi_attivi
+prefill_tok/s = TFLOPS × MFU × TP × (…) ÷ (2 × parametri_attivi)
+TP            = ceil((pesi + KV_task_più_lungo + overhead) × (1+margine) ÷ VRAM_GPU)
+tempo_task    = input ÷ prefill_tok/s + output ÷ decode_tok/s + tool_call × latenza_media
+cloud         = TTFT + input ÷ prefill_API + output × TPOT + tool_call × latenza_media</span>
+<h3>Dimensionamento GPU</h3>
+<span class="f">GPU·s/task     = (prefill + decode ÷ batch) × TP
+gruppi_picco   = Σ_interattivi(n/gg × quota_ora_punta × GPU·s) × picco_stagionale × crescita_fine_orizzonte ÷ 3600 ÷ TP
+gruppi_batch   = Σ_batch(n/gg × GPU·s) ÷ (ore_fuori_punta × 3600) ÷ TP
+gruppi         = ceil(max(picco, batch) ÷ (1 − contesa_DWH)) + failover + test
+GPU_totali     = gruppi × TP (+ GPU DWH dedicate)</span>
+<h3>DWH</h3>
+<span class="f">GB/s_richiesti = TB_task × 1000 ÷ secondi_obiettivo × concorrenza × pruning
+nodi_locali    = ceil(GB/s_richiesti ÷ GB/s_per_nodo)
+cloud          = min(TB_anno × €/TB, slot_picco × €/slot-h × ore_punta × giorni)</span>
+<h3>Economia</h3>
+<span class="f">API = Σ token × prezzo (input · cached · output · long-context ×k) × sconto_batch(quota non interattiva)
+local_TCO_NPV = CAPEX + Σ_t (OPEX_t + refresh_t) ÷ (1+r)^t − residuo ÷ (1+r)^H
+cloud_TCO_NPV = setup + Σ_t OPEX_t ÷ (1+r)^t
+EAC (costo annuo equivalente) = TCO_NPV × r ÷ (1 − (1+r)^−H)
+TCO_corretto  = TCO_NPV + mesi_go-live × costo_ritardo_mese
+valore_netto  = beneficio_attualizzato × pass_rate − TCO_corretto
+energia       = kW_medi × ore × PUE × €/kWh</span>
+</section>
+
+<section id="card"><h2>6. Le card di risultato</h2>
+<table><tr><th style="width:22%">Card</th><th>Cosa mostra e come leggerla</th></tr>
+<tr><td>1 Perimetro</td><td>i 7 piani architetturali per entrambe le alternative, a parità di funzioni e SLA</td></tr>
+<tr><td>2 Vincoli eliminatori</td><td>ciò che esclude un'alternativa <i>prima</i> del confronto economico: qualità minima, SLA per task, potenza, budget, scadenza, rate limit, licenza, vincoli dichiarati</td></tr>
+<tr><td>3 Tempo per task</td><td>per ogni task: prefill + decode + tool call nelle due alternative, esito ok/KO rispetto alla latenza massima, GPU·s consumati</td></tr>
+<tr><td>4 Dimensionamento locale</td><td>VRAM, TP, gruppi GPU (picco vs batch), utilizzazione media, nodi DWH, storage, potenza, energia</td></tr>
+<tr><td>5 Dimensionamento cloud</td><td>costo API per componente, DWH on-demand vs capacity, runtime/sicurezza/support, token/min al picco vs rate limit</td></tr>
+<tr><td>6 Integrazioni</td><td>CAPEX/OPEX/canoni/ore/compliance dei sistemi selezionati</td></tr>
+<tr><td>7 Sviluppo e gestione</td><td>ore, markup, riserva; gestione annua; costo del tempo di attesa</td></tr>
+<tr><td>8 TCO</td><td>TCO NPV, EAC, costo del ritardo, TCO corretto, valore netto; composizione e curva cumulata</td></tr>
+<tr><td>9 Scenari</td><td>prudente / base / favorevole con variazione congiunta delle grandezze correlate</td></tr>
+<tr><td>10 Congruenza dell'utilizzo</td><td>ricalcolo completo da 0,1× a 16× il volume: dove (se) il locale diventa più economico; GPU, utilizzazione, kW, CAPEX per livello</td></tr>
+<tr><td>11 Sensitività</td><td>tornado ±20%: le variabili che spostano di più il risultato e le soglie che invertono la scelta</td></tr>
+<tr><td>12 Fit e confidenza</td><td>radar 1–5 e confidenza per gruppo di input, separati dall'economia</td></tr>
+<tr><td>13 Limiti · 13b Tabella input</td><td>dati da raccogliere; ogni variabile con valore, dato/ipotesi, fonte, confidenza</td></tr>
+<tr><td>14 Raccomandazione</td><td>"Locale conviene se…; Cloud + API conviene se…", robustezza tra scenari, variabili dominanti</td></tr></table>
+</section>
+
+<section id="glossario"><h2>7. Glossario</h2>
+<dl>
+<dt>Open-weight</dt><dd>modello i cui pesi sono scaricabili ed eseguibili in proprio; non necessariamente open source: verificare la licenza</dd>
+<dt>Cloud + API</dt><dd>l'applicazione usa il modello tramite API gestita dal provider, che sostiene GPU e serving; il cliente paga per token</dd>
+<dt>Token</dt><dd>unità di testo (~0,75 parole in inglese, meno in italiano) con cui si misurano input, output e prezzi</dd>
+<dt>Prefill</dt><dd>elaborazione del prompt in un colpo solo; limitata dal calcolo (TFLOPS); determina il TTFT</dd>
+<dt>Decode</dt><dd>generazione token per token; limitata dalla banda di memoria perché rilegge tutti i pesi a ogni token</dd>
+<dt>TTFT</dt><dd>Time To First Token: attesa prima del primo token di risposta</dd>
+<dt>TPOT</dt><dd>Time Per Output Token: ms tra un token e il successivo (40 tok/s ≈ 25 ms)</dd>
+<dt>KV cache</dt><dd>memoria GPU che conserva chiavi/valori dell'attenzione per ogni token di contesto; cresce con contesto × richieste concorrenti</dd>
+<dt>VRAM / HBM</dt><dd>memoria della GPU; deve contenere pesi + KV cache + runtime</dd>
+<dt>Tensor parallel (TP)</dt><dd>suddivisione di un modello su più GPU quando non entra in una sola; ogni "unità" scalabile è il gruppo di TP GPU</dd>
+<dt>Batch (continuous batching)</dt><dd>servire più richieste insieme nel decode: aumenta il throughput aggregato quasi linearmente finché la KV cache lo consente</dd>
+<dt>MBU / MFU</dt><dd>efficienza reale rispetto a banda / calcolo teorici</dd>
+<dt>Quantizzazione</dt><dd>riduzione dei bit per peso (16→8→4): meno memoria e decode più veloce, possibile lieve perdita di qualità</dd>
+<dt>MoE</dt><dd>Mixture of Experts: solo una frazione dei parametri (attivi) lavora per ogni token</dd>
+<dt>SXM / PCIe / NVL</dt><dd>form factor GPU: SXM (server dedicati, NVLink, TDP alto), PCIe (schede standard), NVL (coppie PCIe con bridge NVLink)</dd>
+<dt>TDP</dt><dd>potenza massima della GPU in watt; il consumo medio è TDP × utilizzazione</dd>
+<dt>PUE</dt><dd>Power Usage Effectiveness: energia totale del data center ÷ energia IT (1,5 = +50% per raffreddamento ecc.)</dd>
+<dt>Utilizzazione GPU</dt><dd>quota di tempo in cui le GPU installate lavorano davvero; sotto il 20–30% il locale paga hardware fermo</dd>
+<dt>Picco / media</dt><dd>rapporto tra carico massimo e medio: il locale è dimensionato sul picco, il cloud paga la media</dd>
+<dt>Tool call</dt><dd>chiamata dell'agente a un sistema esterno (ERP, catalogo, CRM, pagamento) per leggere dati o eseguire azioni</dd>
+<dt>Cached input</dt><dd>parte di prompt identica tra chiamate, fatturata a prezzo ridotto dai provider</dd>
+<dt>Long context</dt><dd>prompt oltre una soglia (tip. 200k token) fatturati a prezzo maggiorato</dd>
+<dt>Batch API</dt><dd>elaborazione differita (ore) a prezzo scontato (~50%), adatta ai task non interattivi</dd>
+<dt>Rate limit</dt><dd>massimo token/min o richieste/min del tier API contrattuale</dd>
+<dt>DWH / lakehouse</dt><dd>piattaforma analitica; fatturata in cloud per TB scansionati (on-demand) o per capacità (slot-ora)</dd>
+<dt>Pruning</dt><dd>riduzione dei dati letti grazie a partizioni, indici, clustering</dd>
+<dt>Vector DB / embedding</dt><dd>indice di vettori per il retrieval (RAG); dimensione = vettori × dimensioni × 4 byte × overhead</dd>
+<dt>TCO</dt><dd>Total Cost of Ownership: tutti i costi sull'orizzonte, per un end-state completo e funzionalmente equivalente</dd>
+<dt>NPV</dt><dd>valore attuale netto: flussi futuri scontati al tasso r</dd>
+<dt>EAC</dt><dd>costo annuo equivalente: il TCO NPV trasformato in una rata annua costante</dd>
+<dt>Costo del ritardo</dt><dd>valore perso per ogni mese di attesa prima del go-live</dd>
+<dt>Break-even / congruenza</dt><dd>volume a cui i costi delle due alternative si eguagliano; la card 10 lo calcola ricalcolando l'intero modello</dd>
+<dt>Sensitività (tornado)</dt><dd>variazione del risultato per ±20% di ciascun input, ordinata per impatto</dd>
+<dt>Vincolo eliminatorio</dt><dd>condizione che esclude un'alternativa a prescindere dal costo</dd>
+<dt>Fit</dt><dd>adeguatezza qualitativa (1–5) su fattori non monetizzabili, tenuta separata dal TCO</dd>
+<dt>Dato / ipotesi</dt><dd>valore inserito dall'utente vs valore predefinito del simulatore da confermare</dd>
+<dt>FTE</dt><dd>Full Time Equivalent: persone-anno a tempo pieno</dd>
+<dt>PCI-DSS</dt><dd>standard di sicurezza per chi tratta dati di carte di pagamento; amplia il perimetro di audit in locale</dd>
+<dt>N+1 / failover</dt><dd>capacità aggiuntiva per continuare a servire in caso di guasto</dd>
+<dt>RTO / RPO</dt><dd>tempo massimo di ripristino / perdita massima di dati accettabile</dd>
+<dt>Coding agent</dt><dd>strumenti AI che accelerano sviluppo: applicati simmetricamente alle attività automatizzabili di entrambe le alternative</dd>
+</dl>
+</section>
+
+<section id="json"><h2>8. Formati JSON</h2>
+<h3>Pre-valutazione (15 variabili, anche parziale)</h3>
+<span class="f">{ "quick": {
+  "use_case": "Assistente clienti / e-commerce",
+  "active_users": 25000, "tasks_per_day": 4000, "peak_to_average_ratio": 4, "annual_growth_pct": 40,
+  "model_parameters_b": 32, "quality_gap": "Medio", "data_sensitivity": "Media",
+  "data_tb": 3, "integrations_count": 5, "total_budget": 600000, "horizon_years": 3,
+  "deadline_months": 4, "internal_it_capability": "Base", "annual_benefit": 350000 } }</span>
+<p>Per le scelte basta la prima parola (<code>"Alta"</code>, <code>"Forte"</code>). Esempi pronti nella cartella <code>esempi/</code>.</p>
+<h3>Valutazione completa (Esporta / Importa JSON)</h3>
+<span class="f">{ "version": 2, "inputs": {…tutti i campi A–J…}, "tasks": [ {…} ], "integrations": { "erp": {"on":true,…} }, "dato": ["gpu_price",…], "meta": { "C": {"source":"…","date":"…","conf":"alta"} } }</span>
+</section>
+
+<section id="limiti"><h2>9. Limiti e buone pratiche</h2>
+<ul>
+<li>Le stime di prefill/decode sono fisiche (banda, FLOPS, efficienze): sostituiscile con un <b>benchmark misurato</b> appena possibile (campo "throughput misurato").</li>
+<li>Su contesti ≥ 100k token l'attenzione quadratica aggiunge tempo non modellato (+30–100%): valuta chunking/RAG.</li>
+<li>Il batch è lineare fino al massimo indicato con efficienza 85%; oltre ~128–256 richieste il decode diventa compute-bound.</li>
+<li>La contesa DWH/GPU co-locata è una quota fissa: nella realtà dipende da schedulazione e PCIe/NVMe.</li>
+<li>Non confrontare il prezzo di una scheda con quello di un server: usa quotazioni complete (chassis, CPU, RAM, rete, supporto) e indica form factor, IVA, data e fonte.</li>
+<li>Misura la qualità dei due modelli sullo <b>stesso eval</b>: il gap di qualità è quasi sempre tra le tre variabili dominanti.</li>
+<li>Economia, fit e confidenza restano su assi separati: non sommarli in un unico punteggio.</li>
+</ul>
+</section>
+</main>
+</div>
+</body>
+</html>
