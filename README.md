@@ -171,4 +171,4 @@ node test/quick.js   # attesi: "errors: []" sui tre esempi JSON
 
 ## Licenza
 
-Da definire dal proprietario del repository.
+MIT
