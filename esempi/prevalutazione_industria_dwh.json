@@ -1,0 +1,18 @@
+{
+  "quick": {
+    "use_case": "Analisi dati e reporting su DWH",
+    "active_users": 400,
+    "tasks_per_day": 600,
+    "peak_to_average_ratio": 2,
+    "annual_growth_pct": 20,
+    "model_parameters_b": 120,
+    "quality_gap": "Nessuno (eval equivalente)",
+    "data_tb": 40,
+    "integrations_count": 3,
+    "total_budget": 1200000,
+    "horizon_years": 4,
+    "deadline_months": 9,
+    "internal_it_capability": "Buona (DevOps + data engineer)",
+    "annual_benefit": 700000
+  }
+}

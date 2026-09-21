@@ -1,0 +1,19 @@
+{
+  "quick": {
+    "use_case": "Assistente clienti / e-commerce",
+    "active_users": 25000,
+    "tasks_per_day": 4000,
+    "peak_to_average_ratio": 4,
+    "annual_growth_pct": 40,
+    "model_parameters_b": 32,
+    "quality_gap": "Medio (−5/−10 punti)",
+    "data_sensitivity": "Media — dati personali GDPR, contratto DPA sufficiente",
+    "data_tb": 3,
+    "integrations_count": 5,
+    "total_budget": 600000,
+    "horizon_years": 3,
+    "deadline_months": 4,
+    "internal_it_capability": "Base (sistemisti, nessun MLOps)",
+    "annual_benefit": 350000
+  }
+}

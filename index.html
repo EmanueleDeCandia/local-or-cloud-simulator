@@ -113,7 +113,8 @@ ul,ol{margin:var(--s1) 0;padding-left:18px}li{margin:3px 0}
 .divider span{font-size:11.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3)}
 .divider:before,.divider:after{content:'';flex:1;height:1px;background:var(--line2)}
 /* quick panel */
-#quick{display:none;grid-column:1/-1;background:var(--surface);border:1px solid var(--tx);border-radius:var(--r);padding:var(--s5)}
+.quick-wrap{max-width:1900px;margin:0 auto;padding:0 var(--s5)}
+#quick{display:none;background:var(--surface);border:1px solid var(--line2);border-radius:var(--r);padding:var(--s5);box-shadow:0 8px 30px rgba(17,24,39,.08);margin-top:var(--s4)}
 #quick.on{display:block}
 #quick h2{margin:0 0 var(--s1);font-size:15px;font-weight:600}
 #quick h2:before{content:'Fase 1';font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);margin-right:var(--s3)}
@@ -180,9 +181,9 @@ button:hover{background:linear-gradient(180deg,#f2f4f6,#e2e5ea)}
   <input type="file" id="fileIn" accept="application/json" style="display:none">
   <span id="status"></span>
 </header>
+<div class="quick-wrap"><section id="quick"></section></div>
 <main>
 <aside><div class="tabs" id="tabs"></div><div class="tabbody" id="form"></div></aside>
-<section id="quick"></section>
 <section id="cards"></section>
 </main>
 
@@ -204,10 +205,10 @@ const GPU_CATALOG={
 };
 /* Task: n/giorno, token input, token cache, output, latenza max (s), interattivo (1) o batch (0), tool call, TB scansionati DWH per task, qa = quota del task soggetta a revisione/errore (1 = piena, 0.02 = campionamento) */
 const DEFAULT_TASKS=[
- {name:'Assistente clienti (chat/e-commerce)',per_day:6000,inp:2500,cached:3000,out:400,lat:10,interactive:1,tools:4,scan_tb:0,qa:1},
- {name:'Analisi documento lungo (1M token)',per_day:5,inp:1000000,cached:0,out:3000,lat:180,interactive:1,tools:1,scan_tb:0,qa:1},
- {name:'Report analitico su DWH (1 TB scan)',per_day:40,inp:20000,cached:5000,out:2000,lat:60,interactive:1,tools:3,scan_tb:1,qa:1},
- {name:'Classificazione batch notturna',per_day:50000,inp:800,cached:400,out:50,lat:3600,interactive:0,tools:0,scan_tb:0,qa:0.02},
+ {name:'Assistente clienti (chat/e-commerce)',per_day:8000,inp:2500,cached:3000,out:400,lat:15,interactive:1,tools:4,scan_tb:0,qa:1},
+ {name:'Analisi documentale complessa (64k token)',per_day:150,inp:64000,cached:8000,out:2500,lat:90,interactive:1,tools:1,scan_tb:0,qa:1},
+ {name:'Report analitico su DWH (0.5 TB scan)',per_day:60,inp:15000,cached:5000,out:1500,lat:60,interactive:1,tools:3,scan_tb:0.5,qa:1},
+ {name:'Classificazione batch notturna',per_day:60000,inp:800,cached:400,out:50,lat:3600,interactive:0,tools:0,scan_tb:0,qa:0.02},
 ];
 /* Integrazioni: capex locale, opex locale/anno, cloud €/mese, ore integrazione, ore compliance/sicurezza/anno, latenza ms per chiamata, ore/anno gestione */
 const INTEGRATIONS=[
@@ -295,7 +296,7 @@ const SECTIONS=[
   ['cpu_node_price','Prezzo nodo DWH CPU','€',25000,''],['cpu_node_w','Consumo nodo DWH','W',700,''],
   ['gpu_scan_gbs','Scansione effettiva per GPU (analytics)','GB/s',40,'Limitata da PCIe/NVMe verso la GPU, non dalla HBM'],
   ['dwh_gpu_share_during_inference','Quota tempo GPU sottratta all\'inferenza se co-locato','%',25,'Contesa: HBM, SM e PCIe condivisi'],
-  ['scan_pruning_factor','Quota dati effettivamente letta dopo partizioni/indici','%',100,'100% = scansione piena'],
+  ['scan_pruning_factor','Quota dati effettivamente letta dopo partizioni/indici','%',20,'Quota letta dopo partizioni/indici (tipico 10–30%; 100% = scansione piena)'],
   ['storage_price_tb','Storage locale','€/TB',180,''],['storage_w_per_tb','Consumo storage','W/TB',4,''],
   ['vector_count','Vettori','n',5000000,''],['embedding_dimensions','Dimensioni','dim',1024,''],['index_overhead_factor','Overhead indice','x',1.5,''],
   ['embedding_refresh_pct_month','Embedding rigenerati/mese','%',10,''],['tokens_per_vector','Token per chunk','token',400,''],
@@ -388,13 +389,13 @@ function buildForm(){
   form.addEventListener('input',onEdit);form.addEventListener('change',onEdit);
 }
 function onEdit(e){const t=e.target;
-  if(t.dataset.k){if(readField(t)){DIRTY.add(t.dataset.k);t.classList.add('dirty');if(t.dataset.k==='gpu_model'&&e.type==='change')applyGpuPreset();schedule();}}
+  if(t.dataset.k){if(readField(t)){DIRTY.add(t.dataset.k);t.classList.add('dirty');if(t.dataset.k==='gpu_model')applyGpuPreset();schedule();}}
   else if(t.dataset.meta){const [s,p]=t.dataset.meta.split('.');META[s][p]=t.value;schedule();}
   else if(t.dataset.task!==undefined){const i=+t.dataset.task,f=t.dataset.f;if(f==='name')TASKS[i].name=t.value;else if(f==='interactive')TASKS[i].interactive=t.checked?1:0;else{const n=parseNum(t.value);if(n!==null)TASKS[i][f]=n;}schedule();}
   else if(t.dataset.integ){const [k,f]=t.dataset.integ.split('.');if(f==='on')INTEG[k].on=t.checked;else{const n=parseNum(t.value);if(n!==null)INTEG[k][f]=n;}schedule();}
 }
 function readField(t){const k=t.dataset.k;if(t.type==='checkbox')S[k]=t.checked;else if(t.dataset.num){const n=parseNum(t.value);if(n===null){t.style.borderColor='var(--bad)';return false;}t.style.borderColor='';S[k]=n;}else S[k]=t.value;return true;}
-function applyGpuPreset(){const g=GPU_CATALOG[S.gpu_model];if(!g)return;S.gpu_vram_gb=g.vram;S.gpu_bandwidth_gbs=g.bw;S.gpu_tflops=g.tflops;S.gpu_tdp_w=g.tdp;S.gpu_price=g.price;['gpu_vram_gb','gpu_bandwidth_gbs','gpu_tflops','gpu_tdp_w','gpu_price'].forEach(k=>{document.getElementById('in_'+k).value=S[k];});}
+function applyGpuPreset(){const g=GPU_CATALOG[S.gpu_model];if(!g)return;S.gpu_vram_gb=g.vram;S.gpu_bandwidth_gbs=g.bw;S.gpu_tflops=g.tflops;S.gpu_tdp_w=g.tdp;S.gpu_price=g.price;['gpu_vram_gb','gpu_bandwidth_gbs','gpu_tflops','gpu_tdp_w','gpu_price'].forEach(k=>{const el=document.getElementById('in_'+k);if(el){el.value=S[k];DIRTY.add(k);el.classList.add('dirty');}});}
 function renderTasks(){const el=document.getElementById('tasks');if(!el)return;
   el.innerHTML=`<table class="tt"><tr><th>Task</th><th>n/gg</th><th>Input tok</th><th>Cache tok</th><th>Out tok</th><th>Lat. max s</th><th>Int.</th><th title="Numero di chiamate a sistemi esterni per task">Tool call</th><th>TB scan</th><th>QA</th><th></th></tr>`+TASKS.map((t,i)=>`<tr><td><input data-task="${i}" data-f="name" data-tipname="1" value="${t.name.replace(/"/g,'&quot;')}"></td><td class="n"><input data-task="${i}" data-f="per_day" value="${t.per_day}"></td><td class="n"><input data-task="${i}" data-f="inp" value="${t.inp}"></td><td class="n"><input data-task="${i}" data-f="cached" value="${t.cached}"></td><td class="n"><input data-task="${i}" data-f="out" value="${t.out}"></td><td class="n"><input data-task="${i}" data-f="lat" value="${t.lat}"></td><td><input type="checkbox" data-task="${i}" data-f="interactive" ${t.interactive?'checked':''}></td><td class="n"><input data-task="${i}" data-f="tools" value="${t.tools}"></td><td class="n"><input data-task="${i}" data-f="scan_tb" value="${t.scan_tb}"></td><td class="n"><input data-task="${i}" data-f="qa" value="${t.qa??1}"></td><td><button class="mini" onclick="delTask(${i})">Rimuovi</button></td></tr>`).join('')+`</table><div class="small">Int. = interattivo (utente attende; niente Batch API). <b>Tool call</b> = numero di chiamate a sistemi esterni (ERP, catalogo, CRM, pagamenti…) per ogni task; ognuna aggiunge la latenza media (ms/call) delle integrazioni selezionate nel tab F. TB scan = dati letti dal DWH per ogni esecuzione del task. QA = quota di task soggetta a revisione umana/perdita per errore (1 = piena; 0,02 = campionamento su batch).</div>`;}
 function addTask(){TASKS.push({name:'Nuovo task',per_day:100,inp:2000,cached:0,out:500,lat:10,interactive:1,tools:1,scan_tb:0,qa:1});renderTasks();run();}
@@ -421,7 +422,7 @@ function compute(s,tasks,integ){
   const weights_gb=s.local_model_parameters_b*bytesPerParam;
   const active_gb=s.active_parameters_b*bytesPerParam;
   const kv_per_token_gb=s.kv_bytes_per_token_kb/1024/1024;
-  const maxInput=Math.max(...tasks.map(t=>t.inp+t.out),1);
+  const maxInput=Math.max(...tasks.map(t=>t.inp+(t.cached||0)+t.out),1);
   /* tensor parallel: minimo numero di GPU per contenere pesi + KV del task più lungo + overhead */
   const kv_longest_gb=maxInput*kv_per_token_gb;
   const vram_needed=(weights_gb+kv_longest_gb+s.runtime_overhead_gb)*(1+pct(s.vram_safety_margin));
@@ -439,7 +440,8 @@ function compute(s,tasks,integ){
   const batch=Math.max(1,Math.min(s.max_batch,batch_by_kv));
   const decode_agg_tps=s.measured_tps_override>0?s.measured_tps_override:decode_single_tps*batch*0.85;
   /* tempo per task LOCALE e CLOUD */
-  const toolLat=Object.values(integ).filter(v=>v.on).reduce((a,v)=>a+v.lat_ms,0)/1000/Math.max(1,Object.values(integ).filter(v=>v.on).length); // media per chiamata
+  const autoToolLat=Object.values(integ).filter(v=>v.on).reduce((a,v)=>a+v.lat_ms,0)/1000/Math.max(1,Object.values(integ).filter(v=>v.on).length); // media per chiamata
+  const toolLat=s.tool_latency_budget_s>0?s.tool_latency_budget_s:autoToolLat;
   const taskRes=tasks.map(t=>{
     const tool_s=t.tools*(toolLat||0.15);
     const l_prefill=(t.inp+t.cached*0.1)/prefill_tps;  // cache prefix locale: 10% costo
@@ -450,7 +452,8 @@ function compute(s,tasks,integ){
     const c_total=c_prefill+c_decode+tool_s;
     const l_ok=l_total<=t.lat&&(t.inp+t.cached+t.out)<=s.max_context_tokens,c_ok=c_total<=t.lat&&(t.inp+t.cached+t.out)<=s.api_max_context;
     /* GPU-seconds per task (prefill occupa il gruppo intero; decode condivide il batch) */
-    const gpu_s=(l_prefill+(s.measured_tps_override>0?t.out/s.measured_tps_override:l_decode/batch))*tp;
+    const l_decode_batch=s.measured_tps_override>0?t.out/s.measured_tps_override:t.out/decode_agg_tps;
+    const gpu_s=(l_prefill+l_decode_batch)*tp;
     return{...t,tool_s,l_prefill,l_decode,l_total,c_prefill,c_decode,c_total,l_ok,c_ok,gpu_s,longctx:(t.inp+t.cached)>s.api_long_context_threshold};
   });
   /* carico annuo */
@@ -521,15 +524,24 @@ function compute(s,tasks,integ){
   const capexL={hardware,facilities:s.facilities_capex,licenses:s.initial_licenses,implementation:devL.total,migration:s.migration_cost_local};
   const local_capex=Object.values(capexL).reduce((a,b)=>a+b,0);
   const sumRow=o=>Object.keys(o).filter(k=>k!=='t').reduce((a,k)=>a+o[k],0);
-  const opexL=years.map(t=>{const q=quality(s.human_review_rate_local,s.unsafe_action_rate_local,vol(t));const refresh=(s.hw_life_years>0&&s.hw_life_years<H&&t===Math.floor(s.hw_life_years)+1)?hardware*pct(s.refresh_cost_pct):0;
-    return{t,energy:energy_cost,facilities:s.facilities_opex_year,maintenance:hardware*pct(s.maintenance_pct),people:s.local_fte*s.local_fte_cost,licenses:s.recurring_licenses_year,integr:integ_opex,compliance:complianceL,backup_dr:s.backup_dr_year,appdev:annualDevL,quality:q.review+q.failure,time:timeCostL*vol(t),downtime:dtL,refresh};});
+  const slaHigh=s.availability_target>99.5||s.rto_hours<4||s.rpo_hours<1;
+  const backupL=s.backup_dr_year*(slaHigh?1.3:1.0);
+  const opexL=years.map(t=>{const q=quality(s.human_review_rate_local,s.unsafe_action_rate_local,vol(t));const refresh=(s.hw_life_years>0&&s.hw_life_years<=H&&t===Math.floor(s.hw_life_years))?hardware*pct(s.refresh_cost_pct):0;
+    return{t,energy:energy_cost,facilities:s.facilities_opex_year,maintenance:hardware*pct(s.maintenance_pct),people:s.local_fte*s.local_fte_cost,licenses:s.recurring_licenses_year,integr:integ_opex,compliance:complianceL,backup_dr:backupL,appdev:annualDevL,quality:q.review+q.failure,time:timeCostL*vol(t),downtime:dtL,refresh};});
   const residual=hardware*pct(s.residual_value_pct);
   const local_npv=local_capex+opexL.reduce((a,o)=>a+sumRow(o)*df(o.t),0)-residual*df(H);
   /* ---------- CLOUD ---------- */
   const setupC={implementation:devC.total,migration:s.migration_cost_cloud};const cloud_setup=devC.total+s.migration_cost_cloud;
   const apiCost=(v,t)=>{const pf=Math.pow(1+pct(s.api_price_growth),t-1)*(1-pct(s.api_discount)),mixf=1-pct(s.api_model_mix_cheap_share)*(1-s.api_cheap_price_factor),bd=1-pct(s.api_batch_discount)*(tok.batchable/Math.max(1,annual_tokens));
-    const text=((tok.inp/1e6*s.api_input_price+tok.inpLong/1e6*s.api_input_price*s.api_long_context_multiplier+tok.cached/1e6*s.api_cached_price+tok.out/1e6*s.api_output_price+tok.outLong/1e6*s.api_output_price*s.api_long_context_multiplier))*v*pf*mixf*bd;
-    const emb=s.vector_count*s.tokens_per_vector*pct(s.embedding_refresh_pct_month)*12/1e6*s.api_embedding_price*pf;return{text,emb,total:text+emb};};
+    const factor=v*pf*mixf*bd;
+    const inp=tok.inp/1e6*s.api_input_price*factor;
+    const inpLong=tok.inpLong/1e6*s.api_input_price*s.api_long_context_multiplier*factor;
+    const cached=tok.cached/1e6*s.api_cached_price*factor;
+    const out=tok.out/1e6*s.api_output_price*factor;
+    const outLong=tok.outLong/1e6*s.api_output_price*s.api_long_context_multiplier*factor;
+    const text=inp+inpLong+cached+out+outLong;
+    const emb=s.vector_count*s.tokens_per_vector*pct(s.embedding_refresh_pct_month)*12/1e6*s.api_embedding_price*pf;
+    return{text,emb,total:text+emb,inp,inpLong,cached,out,outLong};};
   const apiY1=apiCost(1,1);
   const dwhCloud=(v)=>{const onDemand=tb_scanned_year*v*s.cloud_scan_price_tb;
     const slotsPeak=maxScanTb>0?s.cloud_slots_per_tb_20s*(maxScanTb)*(20/Math.max(1,s.dwh_target_seconds))*s.dwh_concurrency:0;
@@ -537,7 +549,8 @@ function compute(s,tasks,integ){
   const opexC=years.map(t=>{const v=vol(t),q=quality(s.human_review_rate_api,s.unsafe_action_rate_api,v),a=apiCost(v,t),dw=dwhCloud(v);
     const data_tb=(s.raw_data_tb+s.curated_data_tb)*Math.pow(1+pct(s.annual_data_growth),t)+vector_tb;
     const data=data_tb*(1+s.backup_factor*0.5)*s.storage_price_tb_month*12+s.daily_ingestion_gb*365/1000*s.ingestion_price_tb+s.vector_db_month*12+s.db_cache_month*12;
-    return{t,api:a.total,dwh:dw.cost,runtime:s.app_runtime_month*12*(1+0.5*(v-1))*(1+0.1*(s.seasonal_peak_multiplier-1)),data,egress:s.data_egress_gb_month*12*s.egress_price_gb*v,integr:integ_cloud,security:s.managed_security_month*12,compliance:complianceC,support:s.support_plan_month*12,people:s.cloud_fte*s.cloud_fte_cost,appdev:annualDevC,quality:q.review+q.failure,time:timeCostC*v,downtime:dtC};});
+    const supportC=(s.support_plan_month*12)*(slaHigh?1.4:1.0);
+    return{t,api:a.total,dwh:dw.cost,runtime:s.app_runtime_month*12*(1+0.5*(v-1))*(1+0.1*(s.seasonal_peak_multiplier-1)),data,egress:s.data_egress_gb_month*12*s.egress_price_gb*v,integr:integ_cloud,security:s.managed_security_month*12,compliance:complianceC,support:supportC,people:s.cloud_fte*s.cloud_fte_cost,appdev:annualDevC,quality:q.review+q.failure,time:timeCostC*v,downtime:dtC};});
   const cloud_npv=cloud_setup+opexC.reduce((a,o)=>a+sumRow(o)*df(o.t),0);
   const dwhY1=dwhCloud(1);
   /* rate limit API al picco */
@@ -632,7 +645,7 @@ function render(R){
 prefill  = token_input / (FLOPS_eff / (2 × parametri_attivi))        [compute-bound]
 decode   = token_output × (byte_pesi_attivi / banda_eff)              [memory-bound]
 GPU·s    = (prefill + decode / batch) × TP    → dimensiona i gruppi GPU nell'ora di punta</div>
-   <p class="small">Esempio: 1 M token in input su 38B @8 bit con ${s.gpu_model}: prefill ≈ ${fmtS(1e6/R.prefill_tps)}; l'attenzione quadratica su contesti ≥ 100k aggiunge tempo non modellato (stima prudente: +30–100%). Il task ${badge('ko','KO')} non è risolvibile aggiungendo GPU in parallelo dati: serve TP maggiore, GPU più veloce, quantizzazione o chunking del task.</p>`,{full:true}));
+   <p class="small">Esempio: 64k token in input su 38B @8 bit con ${s.gpu_model}: prefill ≈ ${fmtS(64000/R.prefill_tps)}. Il task ${badge('ko','KO')} non è risolvibile aggiungendo GPU in parallelo dati: serve TP maggiore, GPU più veloce, quantizzazione o chunking del task.</p>`,{full:true}));
   /* 4 dimensionamento locale */
   out.push(card(4,'Dimensionamento locale — modello, GPU, DWH, storage',`
    <div class="kpis">${kpi(fmt(R.vram_needed,0)+' GB','VRAM richiesta (pesi + KV task più lungo + overhead)','loc')}${kpi('TP='+R.tp,'GPU per replica del modello','loc')}${kpi(R.groups_needed,'gruppi necessari','loc',`picco ${R.groups_peak} · batch notturno ${R.groups_batch}${R.dwh_contention?' · contesa DWH +'+fmt(R.dwh_contention*100,0)+'%':''}`)}${kpi(R.gpu_count,'GPU totali','loc',`${R.inference_gpus} inferenza (incl. ${s.failover_groups} failover, ${s.test_env_groups} test)${R.gpuDwh?' + '+(R.gpu_count-R.inference_gpus)+' DWH':''}`)}${kpi(R.servers,'server GPU','loc')}${kpi(fmt(R.gpu_util*100,0)+'%','utilizzazione media GPU',R.gpu_util<0.2?'bad':R.gpu_util>0.8?'warn':'ok')}</div>
@@ -644,7 +657,7 @@ GPU·s    = (prefill + decode / batch) × TP    → dimensiona i gruppi GPU nell
   const o1=R.opexC[0];
   out.push(card(5,'Dimensionamento cloud — API, DWH a consumo, piattaforma',`
    <div class="kpis">${kpi(kE(R.apiY1.total),'API anno 1','cld')}${kpi(kE(o1.dwh),'DWH anno 1 ('+R.dwhY1.model+')','cld',`on-demand ${kE(R.dwhY1.onDemand)} vs capacity ${kE(R.dwhY1.capacity)} (${fmt(R.dwhY1.slotsPeak)} slot al picco)`)}${kpi(kE(o1.runtime+o1.security+o1.support+o1.integr),'runtime + sicurezza + support + integrazioni','cld')}${kpi(fmt(R.peakTpm/1e6,2)+' M','token/min al picco',R.peakTpm>s.api_rate_limit_tpm?'bad':'ok','rate limit '+fmt(s.api_rate_limit_tpm/1e6,1)+' M')}</div>
-   ${stackedBars([{label:'API',values:{'Input':R.tok.inp/1e6*s.api_input_price,'Input long-ctx':R.tok.inpLong/1e6*s.api_input_price*s.api_long_context_multiplier,'Cached':R.tok.cached/1e6*s.api_cached_price,'Output':R.tok.out/1e6*s.api_output_price,'Output long-ctx':R.tok.outLong/1e6*s.api_output_price*s.api_long_context_multiplier,'Embedding':R.apiY1.emb}},{label:'Piattaforma',values:{'DWH':o1.dwh,'Runtime':o1.runtime,'Dati':o1.data,'Integrazioni':o1.integr,'Sicurezza':o1.security,'Egress':o1.egress,'Support':o1.support}}],['Input','Input long-ctx','Cached','Output','Output long-ctx','Embedding','DWH','Runtime','Dati','Integrazioni','Sicurezza','Egress','Support'],[...SEQ_CLD.slice(0,6),...SEQ_LOC.slice(2,9)],{h:240})}
+   ${stackedBars([{label:'API',values:{'Input':R.apiY1.inp,'Input long-ctx':R.apiY1.inpLong,'Cached':R.apiY1.cached,'Output':R.apiY1.out,'Output long-ctx':R.apiY1.outLong,'Embedding':R.apiY1.emb}},{label:'Piattaforma',values:{'DWH':o1.dwh,'Runtime':o1.runtime,'Dati':o1.data,'Integrazioni':o1.integr,'Sicurezza':o1.security,'Egress':o1.egress,'Support':o1.support}}],['Input','Input long-ctx','Cached','Output','Output long-ctx','Embedding','DWH','Runtime','Dati','Integrazioni','Sicurezza','Egress','Support'],[...SEQ_CLD.slice(0,6),...SEQ_LOC.slice(2,9)],{h:240})}
    <p class="small">Sconto Batch API ${s.api_batch_discount}% applicato ai ${fmt(R.tok.batchable/1e6,0)} M token non interattivi. Long context (> ${fmt(s.api_long_context_threshold)} token) ×${s.api_long_context_multiplier}. Nessuna GPU a carico del cliente.</p>`));
   /* 6 integrazioni */
   const iRows=R.on.map(([k,v])=>`<tr><td>${INTEGRATIONS.find(i=>i[0]===k)[1]}</td><td class="num">${kE(v.capex)}</td><td class="num">${kE(v.opex)}</td><td class="num">${kE(v.cloud_m*12)}</td><td class="num">${v.hours}</td><td class="num">${v.comp_h}</td><td class="num">${v.lat_ms}</td></tr>`).join('');
@@ -808,7 +821,18 @@ function renderQuick(){
   <div id="qres"></div>`;
   el.querySelectorAll('[data-q]').forEach(x=>x.addEventListener('change',e=>{const k=e.target.dataset.q;if(e.target.dataset.num){const n=parseNum(e.target.value);if(n!==null)Q[k]=n;}else Q[k]=e.target.value;}));
 }
-function toggleQuick(){const el=document.getElementById('quick');el.classList.toggle('on');if(el.classList.contains('on')&&!el.innerHTML)renderQuick();window.scrollTo({top:0,behavior:'smooth'});}
+function toggleQuick(){
+  const el=document.getElementById('quick');
+  el.classList.toggle('on');
+  const btn=document.getElementById('quickBtn');
+  if(el.classList.contains('on')){
+    if(!el.innerHTML)renderQuick();
+    if(btn)btn.classList.add('primary');
+    el.scrollIntoView({behavior:'smooth',block:'start'});
+  }else{
+    if(btn)btn.classList.remove('primary');
+  }
+}
 function runQuick(){
   const m=quickToFull(Q);S=m.s;TASKS=m.tasks;INTEG=m.integ;DIRTY=new Set(Object.keys(Q_ID_MAP));fillForm();run();
   const R=PREV;if(!R)return;const sc=quickScorecard(Q,R);
@@ -851,7 +875,7 @@ document.addEventListener('DOMContentLoaded',()=>{const l=document.getElementByI
 /* ================= AZIONI ================= */
 let PREV=null;
 function readAll(){document.querySelectorAll('#form [data-k]').forEach(readField);}
-function run(){try{readAll();const R=compute(S,TASKS,INTEG);render(R);const st=document.getElementById('status');if(st){const d=PREV?(R.adjL-R.adjC)-(PREV.adjL-PREV.adjC):0;st.innerHTML='Calcolato '+new Date().toLocaleTimeString('it-IT')+' · TCO corr. L '+kE(R.adjL)+' / C '+kE(R.adjC)+' · GPU '+R.gpu_count+(PREV&&Math.abs(d)>0.5?' · Δ vs precedente <b style="color:'+(d<0?C.loc:C.cld)+'">'+(d>0?'+':'')+kE(d)+'</b>':PREV?' · nessuna variazione del TCO':'');}PREV=R;}catch(e){document.getElementById('cards').innerHTML=`<div class="card full"><h2>Errore di calcolo</h2><pre class="small">${e.stack||e.message}</pre></div>`;console.error(e);}}
+function run(){try{readAll();const R=compute(S,TASKS,INTEG);render(R);const st=document.getElementById('status');if(st){const d=PREV?(R.adjL-R.adjC)-(PREV.adjL-PREV.adjC):0;st.innerHTML='Calcolato '+new Date().toLocaleTimeString('it-IT')+' · TCO corr. L '+kE(R.adjL)+' / C '+kE(R.adjC)+' · '+S.gpu_model+' ('+R.gpu_count+' GPU, TP='+R.tp+')'+(PREV&&Math.abs(d)>0.5?' · Δ vs prec. <b style="color:'+(d<0?C.loc:C.cld)+'">'+(d>0?'+':'')+kE(d)+'</b>':'');}PREV=R;}catch(e){document.getElementById('cards').innerHTML=`<div class="card full"><h2>Errore di calcolo</h2><pre class="small">${e.stack||e.message}</pre></div>`;console.error(e);}}
 function exportJSON(){const blob=new Blob([JSON.stringify({version:2,inputs:S,tasks:TASKS,integrations:INTEG,dato:[...DIRTY],meta:META,exported:new Date().toISOString()},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='simulazione_ai_locale_vs_cloud_v2.json';a.click();}
 function importJSON(){const f=document.getElementById('fileIn');f.onchange=()=>{const fr=new FileReader();fr.onload=()=>{try{const j=JSON.parse(fr.result);if(j.quick){Q=quickDefaults();const n=applyQuickJSON(j.quick);document.getElementById('quick').classList.add('on');renderQuick();runQuick();document.getElementById('status').innerHTML+=` · JSON rapido: ${n} variabili applicate`;f.value='';return;}S={...defaults(),...j.inputs};TASKS=j.tasks||JSON.parse(JSON.stringify(DEFAULT_TASKS));INTEG={...defaultInteg(),...(j.integrations||{})};DIRTY=new Set(j.dato||[]);META={...defaultMeta(),...(j.meta||{})};fillForm();run();}catch(e){alert('File non valido')}};fr.readAsText(f.files[0]);f.value='';};f.click();}
 function resetAll(){S=defaults();TASKS=JSON.parse(JSON.stringify(DEFAULT_TASKS));INTEG=defaultInteg();DIRTY=new Set();META=defaultMeta();fillForm();run();}
